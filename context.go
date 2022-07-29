@@ -33,6 +33,15 @@ func ContextWithScopes(ctx context.Context, request *events.APIGatewayProxyReque
 
 func scopesFromAuthorizer(request *events.APIGatewayProxyRequest) ([]string, error) {
 	claims, ok := request.RequestContext.Authorizer["claims"]
+	scopes, err := scopesFromClaims(claims, ok)
+	if err == nil {
+		return scopes, nil
+	}
+	claims, ok = request.RequestContext.Authorizer["lambdaAuthorizerClaims"]
+	return scopesFromClaims(claims, ok)
+}
+
+func scopesFromClaims(claims interface{}, ok bool) ([]string, error) {
 	if !ok {
 		return nil, fmt.Errorf("claims not found")
 	}
